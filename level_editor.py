@@ -460,7 +460,7 @@ def draw_editor_bar():
     rect = UI_FONT.draw_text(UI_surface, (EDITOR_BAR_WIDTH / 2, rect.bottom + line_size / 2), fonts.ALIGN_CENTER, fonts.ALIGN_CENTER, 15, "pallet no. " + str(current_system.selected_pallet + 1), UI_FONT_COLOUR)
 
     pallet_surface = pygame.Surface((EDITOR_BAR_WIDTH - 16, DISPLAY_SIZE[1] - rect.bottom - 16))
-    pallet_surface.fill(EDITOR_BAR_SECONDARY_COLOUR)
+    pallet_surface.fill(EDITOR_BAR_TERTIARY_COLOUR)
 
     pallet_surface.blit(interactive_pallet.pallet_display, (0, 0-interactive_pallet.y_scroll))
 
