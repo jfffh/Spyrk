@@ -262,7 +262,7 @@ def run_editor():
 
         events = pygame.event.get()
         globals.keymap.set_keys(keys_to_toggle, False)
-        globals.keymap.set_keys(pygame.K_e, False)
+        globals.keymap.set_keys([pygame.K_e, pygame.K_l], False)
         for event in events:
             if event.type == pygame.QUIT:
                 run = False
