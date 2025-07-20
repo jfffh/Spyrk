@@ -1,4 +1,4 @@
-from ..core import utils
+from ...core import utils
 
 #tile_filter -> (open_tiles, other_data) -> dict
 #other_checks - > (tile_position, new_tile_position, all_tiles, other_data) -> bool

@@ -2,6 +2,5 @@ __all__ = ["editor_funcs", "inputs", "rendering", "utils", "json", "physics", "f
 
 from .core import editor_funcs, inputs, json, rendering, utils, physics, fonts, sound, draw
 from . import level
-from . import algorithms
 from . import shaders
 from . import prefabs
