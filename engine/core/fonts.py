@@ -159,6 +159,14 @@ class font:
     def get_line_size(self, font_size:int):
         return self.font_sizes[font_size].get_linesize()
 
+    def draw_text_onto_new_surface(self, font_size:int, text:str, color:tuple, bold:bool = False, italics:bool = False, underline:bool = False):
+        font:pygame.Font = self.font_sizes[font_size]
+        font.set_bold(bold)
+        font.set_italic(italics)
+        font.set_underline(underline)
+        return font.render(text, True, color)
+
+
 ALIGN_CENTER = "center"
 ALIGN_RIGHT = "right"
 ALIGN_LEFT = "left"
