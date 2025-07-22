@@ -40,13 +40,25 @@ def draw_gradient_circle(color:tuple, radius:int):
 
     return surface
 
-def draw_outline_on_surface(surface:pygame.Surface, color:tuple, width:int):
-    outlined_surface = surface.copy()
-    surface_mask = pygame.mask.from_surface(surface)
-    pygame.draw.lines(outlined_surface, color, False, surface_mask.outline(), width)
+def draw_outline_on_surface(surface:pygame.Surface, color:tuple, width:int, extra_thick:bool = False):
+    if extra_thick:
+        offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+    else:
+        offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    outlined_surface = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+    mask = pygame.mask.from_surface(surface)
+    surface_mask = mask.to_surface(setcolor=color); surface_mask.set_colorkey((0, 0, 0))
+    center = (surface.width / 2, surface.height / 2)
+    for offset in offsets:
+        outlined_surface.blit(surface_mask, surface_mask.get_rect(center = (center[0] + offset[0] * width, center[1] + offset[1] * width)))
+    outlined_surface.blit(surface, surface.get_rect(center = center))
     return outlined_surface
 
-def draw_outline_on_sprite(sprite:sprite, color:tuple, width:int):
+def draw_outline_on_sprite(sprite:sprite, color:tuple, width:int, extra_thick:bool = False):
+    surfaces = []
+    for surface in sprite.surfaces:
+        surfaces.append(draw_outline_on_surface(surface, color, width, extra_thick))
+    sprite.surfaces = surfaces
     surfaces = []
     for surface in sprite.surfaces:
         surfaces.append(draw_outline_on_surface(surface, color, width))
