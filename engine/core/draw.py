@@ -45,10 +45,10 @@ def draw_outline_on_surface(surface:pygame.Surface, color:tuple, width:int, extr
         offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
     else:
         offsets = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-    outlined_surface = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+    outlined_surface = pygame.Surface((surface.width + width * 2, surface.height + width * 2), pygame.SRCALPHA)
     mask = pygame.mask.from_surface(surface)
     surface_mask = mask.to_surface(setcolor=color); surface_mask.set_colorkey((0, 0, 0))
-    center = (surface.width / 2, surface.height / 2)
+    center = (outlined_surface.width / 2, outlined_surface.height / 2)
     for offset in offsets:
         outlined_surface.blit(surface_mask, surface_mask.get_rect(center = (center[0] + offset[0] * width, center[1] + offset[1] * width)))
     outlined_surface.blit(surface, surface.get_rect(center = center))
