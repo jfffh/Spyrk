@@ -1,4 +1,5 @@
 import pygame
+from .scale import scaled_window
 
 class keymap:
     def __init__(self):
@@ -24,14 +25,20 @@ class keymap:
             return False
 
 class cursor:
-    def __init__(self):
-        self.x = 0; self.y = 0
+    def __init__(self, scaled_window:scaled_window|None):
+        self.real_x = 0; self.real_y = 0
         self.held_down = 0
         self.left_click = False
         self.right_click = False
 
+        self.scaled_window = scaled_window
+
     def update_cursor(self, delta_time:float):
-        self.x, self.y = pygame.mouse.get_pos()
+        self.real_x, self.real_y = pygame.mouse.get_pos()
+        if self.scaled_window != None:
+            self.x, self.y = self.scaled_window.scale_mouse_position((self.real_x, self.real_y))
+        else:
+            self.x, self.y = self.real_x, self.real_y
         buttons = pygame.mouse.get_pressed()
         self.left_click = buttons[0]
         self.right_click = buttons[2]

@@ -1,4 +1,4 @@
-__all__ = ["editor_funcs", "inputs", "rendering", "utils", "json", "physics", "fonts", "sound", "draw"]
+__all__ = ["editor_funcs", "inputs", "rendering", "utils", "json", "physics", "fonts", "sound", "draw", "scale"]
 
 from . import editor_funcs
 from . import inputs
@@ -9,3 +9,4 @@ from . import physics
 from . import fonts
 from . import sound
 from . import draw
+from . import scale

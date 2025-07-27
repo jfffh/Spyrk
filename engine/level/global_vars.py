@@ -5,7 +5,7 @@ from ..core.inputs import keymap, cursor
 class globals:
     def __init__(self, screen:pygame.Surface, display_size:tuple, display_layers:tuple):
         self.keymap = keymap()
-        self.cursor = cursor()
+        self.cursor = cursor(None)
         self.display = display(display_size, display_layers)
         
         self.screen = screen
