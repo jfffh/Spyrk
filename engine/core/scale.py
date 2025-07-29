@@ -25,6 +25,6 @@ class scaled_window:
         return new_surface
     
     def scale_mouse_position(self, mouse_position:tuple):
-        mouse_position = (mouse_position[0] * self.scale, mouse_position[1] * self.scale)
+        mouse_position = (mouse_position[0] / self.scale, mouse_position[1] / self.scale)
         mouse_position = (mouse_position[0] - self.window_offset[0], mouse_position[1] - self.window_offset[1])
         return mouse_position

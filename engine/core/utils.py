@@ -1,4 +1,4 @@
-import pygame
+import time
 import random
 import math
 from . import default_constants
@@ -60,3 +60,16 @@ def cap_normalized_velocity(speed_x:int, speed_y:int, capped_velocity:int|float)
     if velocity > capped_velocity:
         velocity = capped_velocity
     return (math.cos(direction) * velocity, math.sin(direction) * velocity)
+
+class fps_counter:
+    def __init__(self):
+        self.last_fps_check = time.perf_counter()
+        self.fps = "None"
+        self.frames_since_last_check = 0
+
+    def update(self):
+        self.frames_since_last_check += 1
+        if time.perf_counter() - self.last_fps_check > 1:
+            self.fps = self.frames_since_last_check
+            self.frames_since_last_check = 0
+            self.last_fps_check = time.perf_counter()

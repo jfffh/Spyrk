@@ -98,7 +98,7 @@ class interactive_pallet:
 
 #systems
 class tilemap_primitive_system:
-    def __init__(self, type:str, tile_size:tuple, pallets:list[editor_funcs.pallet], spritesheet:rendering.spritesheet, toggle_key:int|None = None, layers:set = {0}, tile_stacker:tiles.tile_stacker|None = None, layer_offset:int = 0):
+    def __init__(self, type:str, tile_size:tuple, pallets:list[editor_funcs.pallet], spritesheet:rendering.spritesheet, toggle_key:int|None = None, layers:set = {0}, layer_offset:int = 0):
         self.type = type
 
         self.tilemap = tiles.tilemap_primitive(tile_size)
@@ -119,7 +119,6 @@ class tilemap_primitive_system:
 
         self.current_layer = self.min_layer
 
-        self.tile_stacker = tile_stacker
         self.layer_offset = layer_offset
 
 class decal_group_primitive_system:
@@ -166,11 +165,6 @@ def load_level(force_old:bool = False):
             
             if type(target_system) == tilemap_primitive_system:
                 target_system.tilemap.tiles = json.deserialize_tuples_dictionary_keys(system_data["tilemap"])
-                if "tile_stacker" in system_data:
-                    tile_stacks = {}
-                    for tile_position in system_data["tile_stacks"]:
-                        tile_stacks[json.serialize_tuples(tile_position)] = tuple(system_data["tile_stacks"][tile_position])
-                    target_system.tile_stacker.tile_stacks = tile_stacks
             elif type(target_system) == decal_group_primitive_system:
                 decals = {}
                 for decal_position in system_data:
@@ -195,11 +189,6 @@ def save_level(path:str):
     for system in systems:
         if type(system) == tilemap_primitive_system:
             save[system.type] = {"tilemap":json.serialize_tuples_dictionary_keys(system.tilemap.tiles)}
-            if system.tile_stacker != None:
-                tile_stacker_data = {}
-                for tile_position in system.tile_stacker.tile_stacks:
-                    tile_stacker_data[json.serialize_tuples(tile_position)] = list(system.tile_stacker.tile_stacks[tile_position])
-                save[system.type]["tile_stacks"] = tile_stacker_data
         elif type(system) == decal_group_primitive_system:
             decals_data = {}
             for decal_position in system.decal_group.decals:
@@ -409,11 +398,7 @@ def draw_systems():
         if system.show:
             #rendering logic, insert new logic as needed
             if type(system) == tilemap_primitive_system:
-                if system.tile_stacker == None:
-                    layers = system.layers
-                else:
-                    layers = system.tile_stacker
-                tiles.draw_tiles_in_tile_map(system.tilemap, globals.display, DISPLAY_GRID_SIZE, system.spritesheet, frame, DISPLAY_GRID_OFFSET, layers, system.layer_offset)
+                tiles.draw_tiles_in_tile_map(system.tilemap, globals.display, DISPLAY_GRID_SIZE, system.spritesheet, frame, DISPLAY_GRID_OFFSET, system.layers, system.layer_offset)
             elif type(system) == decal_group_primitive_system:
                 decal.draw_decals(system.decal_group, globals.display, system.spritesheet, frame)
             else:

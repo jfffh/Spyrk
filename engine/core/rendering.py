@@ -210,7 +210,6 @@ class display_surface:
     @y.setter
     def y(self, value:int):
         self.position = (self.position[0], value)
-
 #surface group -> a group of display surfaces
 class surface_group:
     def __init__(self):
@@ -344,15 +343,22 @@ class display(camera):
         for display_surface in surface_group.display_surfaces:
             self.layers[display_surface.layer].append(display_surface)
 
-    def draw_to_surface(self, target_surface:pygame.Surface, layers:str|list = "all"):
+    def draw_to_surface(self, target_surface:pygame.Surface, layers:str|list = "all", optimize_using_fblits:bool = False):
         if layers == "all":
             layers = [i for i in range(len(self.layers))]
 
+        def get_fblit_data(display_surface):
+            position = display_surface.surface.get_rect(center = display_surface.position).topleft
+            position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
+            return (display_surface.surface, position)
+        
         for layer in layers:
-            display_surfaces = self.layers[layer]
-            for display_surface in display_surfaces:
-                if display_surface.surface != None:
-                    position = display_surface.position
-                    if display_surface.use_camera:
-                        position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
-                    target_surface.blit(display_surface.surface, display_surface.surface.get_rect(center = position), special_flags=display_surface.special_flags)
+            if optimize_using_fblits:
+                target_surface.fblits(list(map(get_fblit_data, self.layers[layer])))
+            else:
+                for display_surface in self.layers[layer]:
+                    if display_surface.surface != None:
+                        position = display_surface.position
+                        if display_surface.use_camera:
+                            position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
+                        target_surface.blit(display_surface.surface, display_surface.surface.get_rect(center = position), special_flags=display_surface.special_flags)
