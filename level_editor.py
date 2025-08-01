@@ -141,6 +141,33 @@ class decal_group_primitive_system:
 
         self.new_click = False
 
+class tile_field_group_primitive_system:
+    def __init__(self, type:str, tile_size:tuple, tile_field_flags:list, colors:dict[str:tuple], toggle_key:int|None = None, layer:int = 0):
+        self.type = type
+        self.tile_field_flags = tile_field_flags
+
+        pallet = editor_funcs.pallet("tile field flags")
+
+        for tile_field_flag in tile_field_flags:
+            pallet.add_sprite_to_pallet(tile_field_flag, rendering.sprite([UI_FONT.draw_text_onto_new_surface(15, tile_field_flag, (1, 1, 1))]))
+        
+        self.selected_pallet = 0
+        self.pallets = [pallet]
+        self.interactive_pallets = [interactive_pallet(pallet) for pallet in self.pallets]
+
+        self.colors = colors
+
+        self.tile_field_group = tile_fields.tile_field_group_primitive(tile_size)
+
+        self.toggle_key = toggle_key
+        self.show = self.toggle_key == None
+
+        self.current_layer = layer
+        self.min_layer, self.max_layer = layer, layer
+
+        self.selected_tile = None
+        self.new_click = False
+
 def load_level(force_old:bool = False):
     global systems
 
@@ -263,6 +290,8 @@ def run_editor():
         #update
         update_systems()
 
+        globals.screen.fill(BACKGROUND)
+
         draw_systems()
         draw_editor_bar()
 
@@ -271,7 +300,6 @@ def run_editor():
         frame += 1000 * globals.delta_time
 
         pygame.display.flip()
-        pygame.display.set_caption("fps: " + str(round(clock.get_fps())))
 
 def update_systems():
     global globals, systems, show_editor_bar, default_system
@@ -334,6 +362,22 @@ def update_systems():
             current_system.new_click = False
         else:
             current_system.new_click = True
+
+    elif type(current_system) == tile_field_group_primitive_system:
+        if globals.cursor.clicked:
+            if valid_cursor_position:
+                if globals.cursor.left_click and current_system.new_click:
+                    if current_system.selected_tile == None:
+                        current_system.selected_tile = cursor_tile_position
+                    else:
+                        if current_system.selected_tile[0] < cursor_tile_position[0] and current_system.selected_tile[1] < cursor_tile_position[1]:
+                            current_system.tile_field_group.add_tile_field(current_system.selected_tile, (cursor_tile_position[0] + 1, cursor_tile_position[1] + 1), pallet.brush)
+                            current_system.selected_tile = None
+                if globals.cursor.right_click:
+                    current_system.tile_field_group.delete_tile_field_at_position(cursor_position)
+            current_system.new_click = False
+        else:
+            current_system.new_click = True
     
     else:
         raise SystemError("No system explicit interaction method found!")
@@ -392,7 +436,7 @@ def update_systems():
 def draw_systems():
     global globals, systems, frame
 
-    globals.screen.fill(BACKGROUND)
+    globals.display_surface.fill(BACKGROUND)
 
     for system in systems:
         if system.show:
@@ -401,6 +445,8 @@ def draw_systems():
                 tiles.draw_tiles_in_tile_map(system.tilemap, globals.display, DISPLAY_GRID_SIZE, system.spritesheet, frame, DISPLAY_GRID_OFFSET, system.layers, system.layer_offset)
             elif type(system) == decal_group_primitive_system:
                 decal.draw_decals(system.decal_group, globals.display, system.spritesheet, frame)
+            elif type(system) == tile_field_group_primitive_system:
+                tile_fields.draw_tile_fields(system.tile_field_group, globals.display, system.colors, system.current_layer)
             else:
                 raise SystemError("No system explicit rendering method found!")
 
