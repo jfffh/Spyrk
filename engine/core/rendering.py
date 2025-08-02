@@ -349,7 +349,8 @@ class display(camera):
 
         def get_fblit_data(display_surface):
             position = display_surface.surface.get_rect(center = display_surface.position).topleft
-            position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
+            if display_surface.use_camera:
+                position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
             return (display_surface.surface, position)
         
         for layer in layers:
