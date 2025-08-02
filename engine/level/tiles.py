@@ -59,11 +59,19 @@ class tilemap_renderer:
         self.display_grid_offset = display_grid_offset
 
     def refresh_tile_group(self, tile_group:tuple, tilemap:tilemap_primitive|object, layer:int):
-        self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer)].refresh = True
+        layer_grouping = None
+        for layer_group in self.layer_groupings:
+            if layer in layer_group:
+                layer_grouping = layer_group
+        self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer_grouping)].refresh = True
 
     def refresh_tile_group_at_tile_position(self, tile_position:tuple, tilemap:tilemap_primitive|object, layer:int):
         tile_group = (math.floor(tile_position[0] / 2), math.floor(tile_position[1] / 2))
-        self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer)].refresh = True
+        layer_grouping = None
+        for layer_group in self.layer_groupings:
+            if layer in layer_group:
+                layer_grouping = layer_group
+        self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer_grouping)].refresh = True
 
     def get_tile_group_surface(self, tile_group:tuple, tilemap:tilemap_primitive|object, layer:int):
         return self.cached_surfaces.get(((tile_group[0], tile_group[1], id(tilemap)), layer).surface, pygame.Surface(self.tile_grouping_size, pygame.SRCALPHA))
