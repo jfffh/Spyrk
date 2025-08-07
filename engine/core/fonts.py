@@ -6,7 +6,7 @@ class font:
         for size in sizes:
             self.font_sizes[size] = pygame.Font(file, size)
 
-    def draw_text(self, surface:pygame.Surface, position:tuple, x_alignment:str, y_alignment:str, font_size:int, text:str, color:tuple, bold:bool = False, italics:bool = False, underline:bool = False, text_wrap:int|None = None) -> pygame.FRect:
+    def draw_text(self, surface:pygame.Surface, position:tuple, x_alignment:str, y_alignment:str, font_size:int, text:str, color:tuple, bold:bool = False, italics:bool = False, underline:bool = False, text_wrap:int|None = None, anti_alias:bool = True) -> pygame.FRect:
         def align_rect(rect:pygame.FRect, position:tuple, x_alignment:str, y_alignment:str):
             if x_alignment == ALIGN_CENTER:
                 rect.centerx = position[0]
@@ -35,7 +35,7 @@ class font:
             if "\n" in text:
                 text_lines = text.splitlines()
                 for i in range(len(text_lines)):
-                    text_image = font.render(text_lines[i], True, color)
+                    text_image = font.render(text_lines[i], anti_alias, color)
                     rect = text_image.get_rect()
                     if y_alignment == ALIGN_BOTTOM:
                         align_rect(rect, (position[0], position[1] - i * line_size), x_alignment, y_alignment)
@@ -47,7 +47,7 @@ class font:
                     else:
                         text_rect = text_rect.union(rect)
             else:
-                text_image = font.render(text, True, color)
+                text_image = font.render(text, anti_alias, color)
                 rect = text_image.get_rect()
                 align_rect(rect, position, x_alignment, y_alignment)
                 surface.blit(text_image, rect)
@@ -66,7 +66,7 @@ class font:
                     words.insert(0, word)
                     words.insert(1, "\n")
                     words.insert(2, new_words[1])
-                text_image = font.render(word + " ", True, color)
+                text_image = font.render(word + " ", anti_alias, color)
                 if line_length + text_image.get_width() > text_wrap or word == "\n":
                     x = 0
                     line_image = pygame.Surface((line_length, line_size), pygame.SRCALPHA)
@@ -116,7 +116,7 @@ class font:
 
         return text_rect
 
-    def draw_lines_of_text(self, surface:pygame.Surface, position:tuple, x_alignment:str, y_alignment:str, font_size:int, text_lines:list[str], color:tuple, bold:bool = False, italics:bool = False, underline:bool = False, text_wrap:int|None = None) -> pygame.FRect:
+    def draw_lines_of_text(self, surface:pygame.Surface, position:tuple, x_alignment:str, y_alignment:str, font_size:int, text_lines:list[str], color:tuple, bold:bool = False, italics:bool = False, underline:bool = False, anti_alias:bool = True) -> pygame.FRect:
         def align_rect(rect:pygame.FRect, position:tuple, x_alignment:str, y_alignment:str):
             if x_alignment == ALIGN_CENTER:
                 rect.centerx = position[0]
@@ -142,7 +142,7 @@ class font:
         line_size = font.get_linesize()
 
         for i in range(len(text_lines)):
-            text_image = font.render(text_lines[i], True, color)
+            text_image = font.render(text_lines[i], anti_alias, color)
             rect = text_image.get_rect()
             if y_alignment == ALIGN_BOTTOM:
                 align_rect(rect, (position[0], position[1] - i * line_size), x_alignment, y_alignment)
@@ -159,13 +159,12 @@ class font:
     def get_line_size(self, font_size:int):
         return self.font_sizes[font_size].get_linesize()
 
-    def draw_text_onto_new_surface(self, font_size:int, text:str, color:tuple, bold:bool = False, italics:bool = False, underline:bool = False):
+    def draw_text_onto_new_surface(self, font_size:int, text:str, color:tuple, bold:bool = False, italics:bool = False, underline:bool = False, anti_alias:bool = True):
         font:pygame.Font = self.font_sizes[font_size]
         font.set_bold(bold)
         font.set_italic(italics)
         font.set_underline(underline)
-        return font.render(text, True, color)
-
+        return font.render(text, anti_alias, color)
 
 ALIGN_CENTER = "center"
 ALIGN_RIGHT = "right"
