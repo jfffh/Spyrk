@@ -118,7 +118,55 @@ class tilemap_renderer:
                             self.cached_surfaces[(tile_grouping, layer)] = self.tile_group(tile_group_surface, contains_animation)
                         display.add_temp_display_surface(tile_group_surface, tile_grouping_position, layer, use_camera=True, use_shake=True)
 
-def draw_tiles_in_tile_map(tilemap:tilemap_primitive|object, display:rendering.display, display_grid_size:tuple, spritesheet:rendering.spritesheet, frame:int = 0, display_grid_offset:tuple = (0, 0), layers:set = {0}, layer_offset:int = 0):
+    def draw_tiles_in_tilemap_to_surface(self, tilemap:tilemap_primitive|object, display:rendering.display, spritesheet:rendering.spritesheet, frame:int = 0):
+        blitting_data = []
+
+        top_left_tile_grouping = (math.floor(display.camera_x / self.tile_grouping_size[0]) + self.display_grid_offset[0], math.floor(display.camera_y / self.tile_grouping_size[1]) + self.display_grid_offset[1])
+        
+        for xi in range(self.display_grid_size[0]):
+            for yi in range(self.display_grid_size[1]):
+                tile_grouping = (top_left_tile_grouping[0] + xi, top_left_tile_grouping[1] + yi, id(tilemap))
+                tile_grouping_position = (tile_grouping[0] * self.tile_grouping_size[0], tile_grouping[1] * self.tile_grouping_size[1])
+                for layer in self.layer_groupings.keys():
+                    can_use_cache = False
+                    if (tile_grouping, layer) in self.cached_surfaces:
+                        if self.cached_surfaces[(tile_grouping, layer)]:
+                            if self.cached_surfaces[(tile_grouping, layer)].refresh == False:
+                                can_use_cache = True
+
+                    if can_use_cache:
+                        blitting_data.append((self.cached_surfaces[(tile_grouping, layer)].surface, tile_grouping_position))
+                    else:
+                        tile_group_surface = pygame.Surface(self.tile_grouping_size, pygame.SRCALPHA)
+                        top_left_tile = (tile_grouping[0] * self.tile_groupings[0], tile_grouping[1] * self.tile_groupings[1])
+                        contains_animation = False
+                        for tile_layer in self.layer_groupings[layer]:
+                            for xj in range(self.tile_groupings[0]):
+                                for yj in range(self.tile_groupings[1]):
+                                    tile = tilemap.get_tile((top_left_tile[0] + xj, top_left_tile[1] + yj), tile_layer)
+                                    if tile != None:
+                                        surface, offset = spritesheet.get_sprite(tile, frame)
+                                        position = (xj * self.tile_size[0] + self.tile_center[0] + offset[0], yj * self.tile_size[1] + self.tile_center[1] + offset[1])
+                                        tile_group_surface.blit(surface, surface.get_rect(center = position))
+                                        if spritesheet.get_sprite_frames(tile) > 1:
+                                            contains_animation = True
+                        if (tile_grouping, layer) in self.cached_surfaces:
+                            tile_group = self.cached_surfaces[(tile_grouping, layer)]
+                            tile_group.surface = tile_group_surface
+                            tile_group.refresh = contains_animation
+
+                        else:
+                            self.cached_surfaces[(tile_grouping, layer)] = self.tile_group(tile_group_surface, contains_animation)
+                        blitting_data.append((self.cached_surfaces[(tile_grouping, layer)].surface, tile_grouping_position))
+
+        def update_position_based_on_camera(blitting_data:tuple):
+            return (blitting_data[0], display.get_position_relative_to_camera(blitting_data[1][0], blitting_data[1][1], True))
+
+        rendering_surface = pygame.Surface(display.size, pygame.SRCALPHA)
+        rendering_surface.blits(map(update_position_based_on_camera, blitting_data))
+        return rendering_surface
+
+def draw_tiles_in_tilemap(tilemap:tilemap_primitive|object, display:rendering.display, display_grid_size:tuple, spritesheet:rendering.spritesheet, frame:int = 0, display_grid_offset:tuple = (0, 0), layers:set = {0}, layer_offset:int = 0):
     def draw_tile_stack(tilemap:tilemap_primitive|object, tile_position:tuple, display:rendering.display, spritesheet:rendering.spritesheet, tile_stack:set, layer_offset:int):  
         def draw_tile(tilemap:tilemap_primitive|object, tile_position:tuple, position:tuple, layer:int, display:rendering.display, spritesheet:rendering.spritesheet, layer_offset:int):
             if tilemap.check_for_tile(tile_position, layer):
@@ -136,6 +184,34 @@ def draw_tiles_in_tile_map(tilemap:tilemap_primitive|object, display:rendering.d
             tile_position = (top_left[0] + xi, top_left[1] + yi)
             draw_tile_stack(tilemap, tile_position, display, spritesheet, layers, layer_offset)
 
+def draw_tiles_in_tilemap_to_surface(tilemap:tilemap_primitive|object, display:rendering.display, display_grid_size:tuple, spritesheet:rendering.spritesheet, frame:int = 0, display_grid_offset:tuple = (0, 0), layers:set = {0}):
+    blitting_data = []
+    
+    def draw_tile_stack(tilemap:tilemap_primitive|object, tile_position:tuple, blitting_data:list, spritesheet:rendering.spritesheet, tile_stack:set):  
+        def draw_tile(tilemap:tilemap_primitive|object, tile_position:tuple, position:tuple, layer:int, blitting_data:list, spritesheet:rendering.spritesheet):
+            if tilemap.check_for_tile(tile_position, layer):
+                tile = tilemap.get_tile(tile_position, layer)
+                surface, offset = spritesheet.get_sprite(tile, frame)
+
+                blitting_data.append((surface, (position[0] + offset[0], position[1] + offset[1])))
+
+        position = (round(tile_position[0] * tilemap.tile_size[0]), round(tile_position[1] * tilemap.tile_size[1]))
+        for layer in tile_stack:
+            draw_tile(tilemap, tile_position, position, layer, blitting_data, spritesheet)
+
+    top_left = (math.floor(display.camera_x / tilemap.tile_size[0]) + display_grid_offset[0], math.floor(display.camera_y / tilemap.tile_size[1]) + display_grid_offset[1])
+    for xi in range(display_grid_size[0]):
+        for yi in range(display_grid_size[1]):
+            tile_position = (top_left[0] + xi, top_left[1] + yi)
+            draw_tile_stack(tilemap, tile_position, blitting_data, spritesheet, layers)
+
+    def update_position_based_on_camera(blitting_data:tuple):
+        return (blitting_data[0], display.get_position_relative_to_camera(blitting_data[1][0], blitting_data[1][1], True))
+
+    rendering_surface = pygame.Surface(display.size, pygame.SRCALPHA)
+    rendering_surface.blits(map(update_position_based_on_camera, blitting_data))
+    return rendering_surface
+
 def create_tile_mask(size:tuple):
     tile_mask = []
     x = (size[0] - 1) / -2
@@ -145,8 +221,9 @@ def create_tile_mask(size:tuple):
             tile_mask.append((x + xi, y + yi))
     return tile_mask
 
-def get_tiles_in_tile_mask(tile_mask:list, tilemap:tilemap_primitive|object, layer:int = 0):
+def get_tiles_in_tile_mask(tile_position:tuple, tile_mask:list, tilemap:tilemap_primitive|object, layer:int = 0):
     tiles = []
-    for tile_position in tile_mask:
-        if tilemap.check_for_tile(tile_position, layer):
-            tiles.append(tilemap.get_tile(tile_position, layer))
+    for offset in tile_mask:
+        new_tile_position = (tile_position[0] + offset[0], tile_position[1] + offset[1])
+        if tilemap.check_for_tile(new_tile_position, layer):
+            tiles.append(tilemap.get_tile(new_tile_position, layer))
