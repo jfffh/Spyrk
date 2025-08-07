@@ -331,7 +331,7 @@ def update_systems():
                 else:
                     system.show = False
     
-    current_system:tilemap_primitive_system|decal_group_primitive_system = systems[default_system]
+    current_system:tilemap_primitive_system|decal_group_primitive_system|tile_field_group_primitive_system = systems[default_system]
     for i, system in enumerate(systems):
         if i != default_system:
             if system.show:
@@ -388,6 +388,8 @@ def update_systems():
                 system.tilemap.delete_tiles(cursor_tile_position, system.layers)
             if type(system) == decal_group_primitive_system:
                 system.decal_group.delete_decal_at_position(cursor_position)
+            if type(system) == tile_field_group_primitive_system:
+                system.tile_field_group.delete_tile_field_at_position(cursor_position)
 
     #updating pallet
     if valid_cursor_position == False:

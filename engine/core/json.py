@@ -23,6 +23,18 @@ def deserialize_tuples_dictionary_keys(input_dictionary:dict):
         return_dict[deserialize_tuples(key)] = input_dictionary[key]
     return return_dict 
 
+def serialize_tuples_dictionary_values(input_dictionary:dict):
+    return_dict = {}
+    for key in input_dictionary.keys():
+        return_dict[key] = serialize_tuples(input_dictionary[key])
+    return return_dict
+
+def deserialize_tuples_dictionary_values(input_dictionary:dict):
+    return_dict = {}
+    for key in input_dictionary.keys():
+        return_dict[key] = deserialize_tuples(input_dictionary[key])
+    return return_dict 
+
 def serialize_tuples_list_elements(input_list:list):
     return_list = []
     for element in input_list:

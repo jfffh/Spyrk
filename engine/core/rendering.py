@@ -27,8 +27,11 @@ def transform_surface(surface:pygame.Surface, x_flip:bool = False, y_flip:bool =
 #sprite -> contains an image/animation
 class sprite:
     __slots__ = ("surfaces", "duration", "type", "duration_per_frame", "frames", "offset")
-    def __init__(self, surfaces:list, duration:int|None = None, offset:tuple = (0, 0)):
-        self.surfaces = surfaces
+    def __init__(self, surfaces:list|pygame.Surface, duration:int|None = None, offset:tuple = (0, 0)):
+        if type(surfaces) == pygame.Surface:
+            self.surfaces = [surfaces]
+        else:
+            self.surfaces = surfaces
 
         self.duration = duration
         if self.duration != None:
@@ -210,6 +213,7 @@ class display_surface:
     @y.setter
     def y(self, value:int):
         self.position = (self.position[0], value)
+
 #surface group -> a group of display surfaces
 class surface_group:
     def __init__(self):
@@ -343,19 +347,19 @@ class display(camera):
         for display_surface in surface_group.display_surfaces:
             self.layers[display_surface.layer].append(display_surface)
 
-    def draw_to_surface(self, target_surface:pygame.Surface, layers:str|list = "all", optimize_using_fblits:bool = False):
+    def draw_to_surface(self, target_surface:pygame.Surface, layers:str|list = "all", optimize_using_blits:bool = False):
         if layers == "all":
             layers = [i for i in range(len(self.layers))]
 
-        def get_fblit_data(display_surface):
+        def get_blit_data(display_surface):
             position = display_surface.surface.get_rect(center = display_surface.position).topleft
             if display_surface.use_camera:
                 position = self.get_position_relative_to_camera(position[0], position[1], display_surface.use_shake)
             return (display_surface.surface, position)
         
         for layer in layers:
-            if optimize_using_fblits:
-                target_surface.fblits(list(map(get_fblit_data, self.layers[layer])))
+            if optimize_using_blits:
+                target_surface.blits(list(map(get_blit_data, self.layers[layer])))
             else:
                 for display_surface in self.layers[layer]:
                     if display_surface.surface != None:

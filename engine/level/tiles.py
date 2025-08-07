@@ -61,7 +61,7 @@ class tilemap_renderer:
     def refresh_tile_group(self, tile_group:tuple, tilemap:tilemap_primitive|object, layer:int):
         layer_grouping = None
         for layer_group in self.layer_groupings:
-            if layer in layer_group:
+            if layer in self.layer_groupings[layer_group]:
                 layer_grouping = layer_group
         self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer_grouping)].refresh = True
 
@@ -69,7 +69,7 @@ class tilemap_renderer:
         tile_group = (math.floor(tile_position[0] / 2), math.floor(tile_position[1] / 2))
         layer_grouping = None
         for layer_group in self.layer_groupings:
-            if layer in layer_group:
+            if layer in self.layer_groupings[layer_group]:
                 layer_grouping = layer_group
         self.cached_surfaces[((tile_group[0], tile_group[1], id(tilemap)), layer_grouping)].refresh = True
 
@@ -90,7 +90,8 @@ class tilemap_renderer:
                     can_use_cache = False
                     if (tile_grouping, layer) in self.cached_surfaces:
                         if self.cached_surfaces[(tile_grouping, layer)]:
-                            can_use_cache = True
+                            if self.cached_surfaces[(tile_grouping, layer)].refresh == False:
+                                can_use_cache = True
 
                     if can_use_cache:
                         display.add_temp_display_surface(self.cached_surfaces[(tile_grouping, layer)].surface, tile_grouping_position, layer, use_camera=True, use_shake=True)
