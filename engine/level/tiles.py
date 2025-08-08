@@ -225,6 +225,5 @@ def get_tiles_in_tile_mask(tile_position:tuple, tile_mask:list, tilemap:tilemap_
     tiles = []
     for offset in tile_mask:
         new_tile_position = (tile_position[0] + offset[0], tile_position[1] + offset[1])
-        if tilemap.check_for_tile(new_tile_position, layer):
-            tiles.append(tilemap.get_tile(new_tile_position, layer))
+        tiles.append(tilemap.get_tile(new_tile_position, layer))
     return tiles
