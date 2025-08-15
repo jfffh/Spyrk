@@ -50,6 +50,8 @@ def a_star(starting_tile:tuple, target_tile:tuple, max_pathfinding_distance:int,
             tile_position = find_tile_with_lowest_cost(tile_filter(open_tiles, other_data))
         else:
             tile_position = find_tile_with_lowest_cost(open_tiles)
+        if tile_position == None:
+            return None
 
         tile = open_tiles[tile_position]
         del open_tiles[tile_position]
