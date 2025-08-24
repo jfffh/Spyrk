@@ -100,12 +100,12 @@ class tilemap_renderer:
                         top_left_tile = (tile_grouping[0] * self.tile_groupings[0], tile_grouping[1] * self.tile_groupings[1])
                         contains_animation = False
                         for tile_layer in self.layer_groupings[layer]:
-                            for xj in range(self.tile_groupings[0]):
-                                for yj in range(self.tile_groupings[1]):
-                                    tile = tilemap.get_tile((top_left_tile[0] + xj, top_left_tile[1] + yj), tile_layer)
+                            for xj in range(self.tile_groupings[0] + 2):
+                                for yj in range(self.tile_groupings[1] + 2):
+                                    tile = tilemap.get_tile((top_left_tile[0] + xj - 1, top_left_tile[1] + yj - 1), tile_layer)
                                     if tile != None:
                                         surface, offset = spritesheet.get_sprite(tile, frame)
-                                        position = (xj * self.tile_size[0] + self.tile_center[0] + offset[0], yj * self.tile_size[1] + self.tile_center[1] + offset[1])
+                                        position = ((xj - 1) * self.tile_size[0] + self.tile_center[0] + offset[0], (yj - 1) * self.tile_size[1] + self.tile_center[1] + offset[1])
                                         tile_group_surface.blit(surface, surface.get_rect(center = position))
                                         if spritesheet.get_sprite_frames(tile) > 1:
                                             contains_animation = True
@@ -141,12 +141,12 @@ class tilemap_renderer:
                         top_left_tile = (tile_grouping[0] * self.tile_groupings[0], tile_grouping[1] * self.tile_groupings[1])
                         contains_animation = False
                         for tile_layer in self.layer_groupings[layer]:
-                            for xj in range(self.tile_groupings[0]):
-                                for yj in range(self.tile_groupings[1]):
-                                    tile = tilemap.get_tile((top_left_tile[0] + xj, top_left_tile[1] + yj), tile_layer)
+                            for xj in range(self.tile_groupings[0] + 2):
+                                for yj in range(self.tile_groupings[1] + 2):
+                                    tile = tilemap.get_tile((top_left_tile[0] + xj - 1, top_left_tile[1] + yj - 1), tile_layer)
                                     if tile != None:
                                         surface, offset = spritesheet.get_sprite(tile, frame)
-                                        position = (xj * self.tile_size[0] + self.tile_center[0] + offset[0], yj * self.tile_size[1] + self.tile_center[1] + offset[1])
+                                        position = ((xj - 1) * self.tile_size[0] + self.tile_center[0] + offset[0], (yj - 1) * self.tile_size[1] + self.tile_center[1] + offset[1])
                                         tile_group_surface.blit(surface, surface.get_rect(center = position))
                                         if spritesheet.get_sprite_frames(tile) > 1:
                                             contains_animation = True
