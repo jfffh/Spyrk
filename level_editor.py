@@ -122,7 +122,7 @@ class tilemap_primitive_system:
         self.layer_offset = layer_offset
 
 class decal_group_primitive_system:
-    def __init__(self, type:str, pallets:list[editor_funcs.pallet], spritesheet:rendering.spritesheet, toggle_key:int|None = None, layer:int = 0):
+    def __init__(self, type:str, pallets:list[editor_funcs.pallet], spritesheet:rendering.spritesheet, toggle_key:int|None = None, layers:set = {0}, layer_offset:int = 0):
         self.type = type
 
         self.selected_pallet = 0
@@ -134,12 +134,20 @@ class decal_group_primitive_system:
         self.toggle_key = toggle_key
         self.show = self.toggle_key == None
 
-        self.current_layer = layer
-        self.min_layer, self.max_layer = layer, layer
+        self.layers = layers
+        
+        self.max_layer = max(layers)
+        self.min_layer = min(layers)
+
+        self.current_layer = self.min_layer
+
+        self.layer_offset = layer_offset
         
         self.decal_group = decal.decal_group_primitive()
 
         self.new_click = False
+
+        self.rotation = 0
 
 class tile_field_group_primitive_system:
     def __init__(self, type:str, tile_size:tuple, tile_field_flags:list, colors:dict[str:tuple], toggle_key:int|None = None, layer:int = 0):
@@ -198,8 +206,8 @@ def load_level(force_old:bool = False):
                     decal = system_data[decal_position]
                     decals[json.deserialize_tuples(decal_position)] = {
                         "name":decal["name"], 
-                        "size":json.serialize_tuples(decal["size"]), 
-                        "offset":json.serialize_tuples(decal["offset"]),
+                        "size":json.deserialize_tuples(decal["size"]), 
+                        "offset":json.deserialize_tuples(decal["offset"]),
                         "layer":decal["layer"], 
                         "data":decal["data"]}
                 target_system.decal_group.decals = decals
@@ -356,12 +364,22 @@ def update_systems():
             if valid_cursor_position:
                 surface, offset = current_system.spritesheet.get_sprite(pallet.brush)
                 if globals.cursor.left_click and current_system.new_click:
-                    current_system.decal_group.add_decal(cursor_position, pallet.brush, surface.size, offset, current_system.current_layer)
+                    if current_system.rotation == 0:
+                        current_system.decal_group.add_decal(cursor_position, pallet.brush, surface.size, offset, current_system.current_layer)
+                    else:
+                        current_system.decal_group.add_decal(cursor_position, pallet.brush, surface.size, offset, current_system.current_layer, {"rotation":current_system.rotation})
                 if globals.cursor.right_click:
                     current_system.decal_group.delete_decal_on_layer(cursor_position, current_system.current_layer)
             current_system.new_click = False
         else:
             current_system.new_click = True
+        
+        if globals.keymap.check_if_key_pressed(pygame.K_r):
+            if globals.keymap.check_if_key_pressed(pygame.K_LSHIFT):
+                current_system.rotation = 0
+            else:
+                current_system.rotation += 100 * globals.delta_time
+                current_system.rotation = current_system.rotation % 360
 
     elif type(current_system) == tile_field_group_primitive_system:
         if globals.cursor.clicked:

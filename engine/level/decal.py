@@ -32,4 +32,6 @@ def draw_decals(decal_group:decal_group_primitive|object, display:rendering.disp
     for i, position in enumerate(decal_group.decals):
         decal = decal_group.decals[position]
         surface, offset = spritesheet.get_sprite(decal["name"], frame)
+        if "rotation" in decal["data"]:
+            surface = pygame.transform.rotate(surface, -decal["data"]["rotation"])
         display.add_temp_display_surface(surface, (position[0] + offset[0], position[1] + offset[1]), decal["layer"], use_camera=True, use_shake=True)

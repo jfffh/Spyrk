@@ -212,6 +212,20 @@ def draw_tiles_in_tilemap_to_surface(tilemap:tilemap_primitive|object, display:r
     rendering_surface.blits(map(update_position_based_on_camera, blitting_data))
     return rendering_surface
 
+def draw_group_of_tiles_in_tilemap_to_new_surface(tilemap:tilemap_primitive|object, start_tile:tuple, end_tile:tuple, spritesheet:rendering.spritesheet, layers:set = {0}):
+    rendering_surface = pygame.Surface(((end_tile[0] - start_tile[0]) * tilemap.tile_size[0], (end_tile[1] - start_tile[1]) * tilemap.tile_size[1]), pygame.SRCALPHA)
+    
+    for x, xi in zip(range(start_tile[0], end_tile[0] + 1), range(end_tile[0] - start_tile[0] + 1)):
+        for y, yi in zip(range(start_tile[1], end_tile[1] + 1), range(end_tile[1] - start_tile[1] + 1)):
+            tile_position = (x, y)
+            for layer in layers:
+                if tilemap.check_for_tile(tile_position, layer):
+                    tile = tilemap.get_tile(tile_position, layer)
+                    surface, offset = spritesheet.get_sprite(tile)
+                    rendering_surface.blit(surface, surface.get_rect(center = (xi * tilemap.tile_size[0] + tilemap.tile_center[0] + offset[0], yi * tilemap.tile_size[1] + tilemap.tile_center[1] + offset[1])))
+    
+    return rendering_surface
+
 def create_tile_mask(size:tuple):
     tile_mask = []
     x = (size[0] - 1) / -2
